@@ -35,13 +35,19 @@ public class KrukTester {
 
                     Tik curTik = iterator.next();
 
-                    BigDecimal priceToOpenLong = prevTik.close.subtract(minPips.multiply(new BigDecimal(breackdown)));
-                    BigDecimal priceToOpenShort = prevTik.close.add(minPips.multiply(new BigDecimal(breackdown)));
-                    if (priceToOpenLong.compareTo(curTik.low) == 1 || priceToOpenLong.compareTo(curTik.low) == 0) {
+                    BigDecimal priceToOpenLong = getPriceToLong(minPips, breackdown, prevTik);
+                    BigDecimal priceToOpenShort = getPriceToShort(minPips, breackdown, prevTik);
+
+
+                    if (isTradeToLongStarted(curTik, priceToOpenLong)) {
+
+                        System.out.println("long"+minPips.multiply(new BigDecimal(breackdown))+"\n prev:"+prevTik+"\n cur:"+curTik);
                     }
 
-                    if (priceToOpenShort.compareTo(curTik.high) == -1 || priceToOpenShort.compareTo(curTik.high) == 0) {
 
+                    if (isTradeToShortStarted(curTik, priceToOpenShort)) {
+
+                        System.out.println("short"+minPips.multiply(new BigDecimal(breackdown))+"\n prev:"+prevTik+"\n cur:"+curTik);
                     }
                     prevTik=curTik;
 
@@ -49,5 +55,21 @@ public class KrukTester {
             }
 
         }
+    }
+
+    private boolean isTradeToLongStarted(Tik curTik, BigDecimal priceToOpenLong) {
+        return priceToOpenLong.compareTo(curTik.low) == 1 || priceToOpenLong.compareTo(curTik.low) == 0;
+    }
+
+    private boolean isTradeToShortStarted(Tik curTik, BigDecimal priceToOpenShort) {
+        return priceToOpenShort.compareTo(curTik.high) == -1 || priceToOpenShort.compareTo(curTik.high) == 0;
+    }
+
+    private BigDecimal getPriceToShort(BigDecimal minPips, int breackdown, Tik prevTik) {
+        return prevTik.close.add(minPips.multiply(new BigDecimal(breackdown)));
+    }
+
+    private BigDecimal getPriceToLong(BigDecimal minPips, int breackdown, Tik prevTik) {
+        return prevTik.close.subtract(minPips.multiply(new BigDecimal(breackdown)));
     }
 }
