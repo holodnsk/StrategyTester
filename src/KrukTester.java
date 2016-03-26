@@ -19,40 +19,44 @@ public class KrukTester {
         this.minPips = minPips;
 
         for (int breackdown = MIN_BREACKDOWN_TO_TRADE; breackdown < MAX_BREAKDOWN_TO_TRADE; breackdown++) {
-            for (int profit = MIN_PROFIT; profit < MAX_PROFIT; profit++) {
-                Iterator<Tik> iterator = history.iterator();
-                boolean isFirstTik = true;
-
-                // just any tik for init new Tik
-                Tik prevTik = new Tik("20160322,100000,112.28,112.63,112.1,112.47,1038180");
-
-                while (iterator.hasNext()) {
-                    if (isFirstTik) {
-                        isFirstTik = false;
-                        prevTik = iterator.next();
-                        continue;
-                    }
-
-                    Tik curTik = iterator.next();
-
-                    BigDecimal priceToOpenLong = getPriceToLong(minPips, breackdown, prevTik);
-                    BigDecimal priceToOpenShort = getPriceToShort(minPips, breackdown, prevTik);
-
-
-                    if (isTradeToLongStarted(curTik, priceToOpenLong)) {
-
-                        System.out.println("long"+minPips.multiply(new BigDecimal(breackdown))+"\n prev:"+prevTik+"\n cur:"+curTik);
-                    }
-
-
-                    if (isTradeToShortStarted(curTik, priceToOpenShort)) {
-
-                        System.out.println("short"+minPips.multiply(new BigDecimal(breackdown))+"\n prev:"+prevTik+"\n cur:"+curTik);
-                    }
-                    prevTik=curTik;
-
-                }
+            for (int expectedIncome = MIN_PROFIT; expectedIncome < MAX_PROFIT; expectedIncome++) {
+                getStatsOfThisBreackdownsAndExpectedIncome(history, minPips, breackdown, expectedIncome);
             }
+
+        }
+    }
+
+    private void getStatsOfThisBreackdownsAndExpectedIncome(List<Tik> history, BigDecimal minPips, int breackdown, int expectedIncome) {
+        Iterator<Tik> iterator = history.iterator();
+        boolean isFirstTik = true;
+
+        // just any tik for init new Tik
+        Tik prevTik = new Tik("20160322,100000,112.28,112.63,112.1,112.47,1038180");
+
+        while (iterator.hasNext()) {
+            if (isFirstTik) {
+                isFirstTik = false;
+                prevTik = iterator.next();
+                continue;
+            }
+
+            Tik curTik = iterator.next();
+
+            BigDecimal priceToOpenLong = getPriceToLong(minPips, breackdown, prevTik);
+            BigDecimal priceToOpenShort = getPriceToShort(minPips, breackdown, prevTik);
+
+
+            if (isTradeToLongStarted(curTik, priceToOpenLong)) {
+
+                System.out.println("long"+minPips.multiply(new BigDecimal(breackdown))+"\n prev:"+prevTik+"\n cur:"+curTik);
+            }
+
+
+            if (isTradeToShortStarted(curTik, priceToOpenShort)) {
+
+                System.out.println("short"+minPips.multiply(new BigDecimal(breackdown))+"\n prev:"+prevTik+"\n cur:"+curTik);
+            }
+            prevTik=curTik;
 
         }
     }
