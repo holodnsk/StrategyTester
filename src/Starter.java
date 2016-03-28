@@ -3,12 +3,10 @@ import java.io.FileNotFoundException;
 import java.math.BigDecimal;
 import java.util.*;
 
-/**
- * Created by user1 on 25.03.2016.
- */
+
 public class Starter {
-//    protected static final String FILE_HISTORY = "SBER-3-2.txt";
-    protected static final String FILE_HISTORY = "test.txt";
+    protected static final String FILE_HISTORY = "SBER-3-2.txt";
+//    protected static final String FILE_HISTORY = "test.txt";
 
 
      public static void main(String[] args) throws FileNotFoundException {

@@ -1,79 +1,106 @@
 import java.math.BigDecimal;
-import java.util.Iterator;
 import java.util.List;
 
-/**
- * Created by user1 on 25.03.2016.
- */
+
 public class KrukTester {
-    protected static final int MIN_BREACKDOWN_TO_TRADE = 50;
-    protected static final int MAX_BREAKDOWN_TO_TRADE = 51;
-    protected static final int MIN_PROFIT = 2;
-    protected static final int MAX_PROFIT = 150;
+    protected static final int MIN_BREACKDOWN_TO_TRADE = 6;
+    protected static final int MAX_BREAKDOWN_TO_TRADE = 7;
+    protected static final int MIN_PROFIT = 5;
+    protected static final int MAX_PROFIT = 100;
+    protected static final int MAX_STEPS_TO_TAKE_PROFIT = 100;
     BigDecimal minPips;
     List<Tik> history;
+
 
 
     public KrukTester(List<Tik> history, BigDecimal minPips) {
         this.history=history;
         this.minPips = minPips;
 
-        for (int breackdown = MIN_BREACKDOWN_TO_TRADE; breackdown < MAX_BREAKDOWN_TO_TRADE; breackdown++) {
-            for (int expectedIncome = MIN_PROFIT; expectedIncome < MAX_PROFIT; expectedIncome++) {
-                getStatsOfThisBreackdownsAndExpectedIncome(history, minPips, breackdown, expectedIncome);
-            }
+        // перебираем весь диапазон допустимых пробоев и на каждый из них весь диапазон опустимого профита
+        System.out.println(":start");
+        for (int intBreakdown = MIN_BREACKDOWN_TO_TRADE;
+             intBreakdown < MAX_BREAKDOWN_TO_TRADE;
+             intBreakdown++) {
+            System.out.println("breakdown"+intBreakdown);
+            BigDecimal breakdown = minPips.multiply(new BigDecimal(intBreakdown));
+
+                for (int expectedIncomeMultiplier = MIN_PROFIT;
+                     expectedIncomeMultiplier < intBreakdown;
+                     expectedIncomeMultiplier++) {
+                    BigDecimal expectedIncome = minPips.multiply(new BigDecimal(expectedIncomeMultiplier));
+                    getFailsLongsThisBreackdownsAndExpectedIncome(breakdown, expectedIncome);
+
+                }
 
         }
     }
 
-    private void getStatsOfThisBreackdownsAndExpectedIncome(List<Tik> history, BigDecimal minPips, int breackdown, int expectedIncome) {
-        Iterator<Tik> iterator = history.iterator();
-        boolean isFirstTik = true;
+    private void getFailsLongsThisBreackdownsAndExpectedIncome(BigDecimal breakdown, BigDecimal expectedIncome) {
 
-        // just any tik for init new Tik
+        int countComplete=0;
+        int countFails=0;
+
+        boolean isFirstTik = true;
         Tik prevTik = new Tik("20160322,100000,112.28,112.63,112.1,112.47,1038180");
 
-        while (iterator.hasNext()) {
+        for (Tik curTik : history) {
             if (isFirstTik) {
                 isFirstTik = false;
-                prevTik = iterator.next();
+                prevTik = curTik;
                 continue;
             }
 
-            Tik curTik = iterator.next();
-
-            BigDecimal priceToOpenLong = getPriceToLong(minPips, breackdown, prevTik);
-            BigDecimal priceToOpenShort = getPriceToShort(minPips, breackdown, prevTik);
+            BigDecimal priceToOpenLong = getPriceToOpenLong(breakdown, prevTik);
+            BigDecimal goalPriceToCloseLong = getGoalPriceToCloseLong(priceToOpenLong, expectedIncome);
 
 
             if (isTradeToLongStarted(curTik, priceToOpenLong)) {
+                if (tradeToLong(curTik, priceToOpenLong, goalPriceToCloseLong)) {
+                    countComplete++;
+                } else countFails++;
 
-                System.out.println("long"+minPips.multiply(new BigDecimal(breackdown))+"\n prev:"+prevTik+"\n cur:"+curTik);
             }
 
 
-            if (isTradeToShortStarted(curTik, priceToOpenShort)) {
-
-                System.out.println("short"+minPips.multiply(new BigDecimal(breackdown))+"\n prev:"+prevTik+"\n cur:"+curTik);
-            }
             prevTik=curTik;
+        }
 
+        if (countComplete > 0) {
+
+            System.out.println("breakdown:"+breakdown+" expectesIncome:"+expectedIncome+" comlete:"+countComplete+" fails:"+countFails);
         }
     }
 
+    private BigDecimal getGoalPriceToCloseLong(BigDecimal priceToOpenLong, BigDecimal expectedIncome) {
+        return priceToOpenLong.add(expectedIncome);
+    }
+
+
+
+    private boolean tradeToLong(Tik curTik, BigDecimal priceToOpenLong, BigDecimal goalPriceToCloseLong) {
+        for (int indexOfHistory = history.indexOf(curTik)+1; // skip tik of open trade
+             indexOfHistory < history.indexOf(curTik)+MAX_STEPS_TO_TAKE_PROFIT && indexOfHistory<history.size();
+             indexOfHistory++) {
+
+            BigDecimal high = history.get(indexOfHistory).high;
+            if (goalPriceToCloseLong.compareTo(high) == -1) {
+
+                return true;
+            }
+
+        }
+        return false;
+
+    }
+
     private boolean isTradeToLongStarted(Tik curTik, BigDecimal priceToOpenLong) {
-        return priceToOpenLong.compareTo(curTik.low) == 1 || priceToOpenLong.compareTo(curTik.low) == 0;
+        return priceToOpenLong.compareTo(curTik.low) >= 0 ;
     }
 
-    private boolean isTradeToShortStarted(Tik curTik, BigDecimal priceToOpenShort) {
-        return priceToOpenShort.compareTo(curTik.high) == -1 || priceToOpenShort.compareTo(curTik.high) == 0;
-    }
 
-    private BigDecimal getPriceToShort(BigDecimal minPips, int breackdown, Tik prevTik) {
-        return prevTik.close.add(minPips.multiply(new BigDecimal(breackdown)));
-    }
 
-    private BigDecimal getPriceToLong(BigDecimal minPips, int breackdown, Tik prevTik) {
-        return prevTik.close.subtract(minPips.multiply(new BigDecimal(breackdown)));
+    private BigDecimal getPriceToOpenLong(BigDecimal breakdown, Tik prevTik) {
+        return prevTik.close.subtract(breakdown);
     }
 }
