@@ -5,7 +5,7 @@ import java.util.*;
 
 
 public class Starter {
-    protected static final String FILE_HISTORY = "SBER-3-2.txt";
+    protected static final String FILE_HISTORY = "SBER1116.txt";
 //    protected static final String FILE_HISTORY = "test.txt";
 
 
