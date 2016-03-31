@@ -5,7 +5,7 @@ import java.util.*;
 
 
 public class Starter {
-    protected static final String FILE_HISTORY = "SBER1116.txt";
+    protected static final String FILE_HISTORY = "test.txt";
 //    protected static final String FILE_HISTORY = "test.txt";
 
 
@@ -13,7 +13,8 @@ public class Starter {
 
          List<Tik> history = loadHistory();
          BigDecimal minPips = getMinPips(history);
-         new KrukTester(history, minPips);
+//         new KrukTester(history, minPips);
+         new KrukTesterLinear(history, minPips);
     }
 
     private static BigDecimal getMinPips(List<Tik> history) {
